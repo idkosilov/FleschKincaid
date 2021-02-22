@@ -1,16 +1,20 @@
+"""
+Developers:
+I. Kosilov (50%)
+V. Vlasov (50%)
+"""
+
 from textblob import TextBlob
 from collections import Counter
 
 
 def readable_index(asl: float, asw: float, lang: str):
-    """
-    Влас, эту функцию делаешь ты для русского и английского языка в зависимости от языка должны быть разные формулы
-    :param lang: язык текста
-    :param asl: средняя длина предложения в словах
-    :param asw: средняя длина слова в слогах
-    :return: FRE = 206.835 − (1.3 × ASL) − (60.1 × ASW) - индекс удобочитаемости
-    классификацию = текст хорошо читается (загугли классификацию)
-    """
+    if lang == "ru":
+        value = 206.835 - 1.3 * asl - 60.1 * asw
+    elif lang == "en":
+        value = 206.835 - 1.015 * asl - 84.6 * asw
+    else:
+        raise Exception("Invalid language")
     return value
 
 
@@ -35,7 +39,30 @@ def main():
     asl = words / sentences
     asw = syllables / words
     value = readable_index(asl, asw, lang)
+    if value < 30:
+        readable = "Очень трудно читать."
+    elif 30 < value < 65:
+        readable = "Немного трудно читать."
+    elif 65 < value < 80:
+        readable = "Легко читать."
+    else:
+        readable = "Очень легко читать."
     sentiment, subjectivity = text.sentiment if lang == "en" else text.translate(to="en").sentiment
+    if sentiment < -0.5:
+        tonality = "Негативная"
+    elif -0.5 <= sentiment < 0.5:
+        tonality = "Нейтральная"
+    elif sentiment >= 0.5:
+        tonality = "Позитивная"
+    print(f"Предложений: {sentences}",
+          f"Слов: {words}",
+          f"Слогов: {syllables}",
+          f"Средняя длина предложения в словах: {asl}",
+          f"Средняя длина слова в слогах: {asw}",
+          f"Индекс удобочитаемости Флеша: {value}",
+          f"{readable}",
+          f"Тональность: {tonality}",
+          f"Объективность: {subjectivity * 100}%", sep='\n')
 
 
 if __name__ == "__main__":
